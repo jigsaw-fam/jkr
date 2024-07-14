@@ -1,20 +1,18 @@
 // chain
-const CHAIN_NAME      = "OP Mainnet";
-const CHAIN_RPC       = "https://mainnet.optimism.io";
-const CHAIN_ID        = 10;
+const CHAIN_NAME      = "DBK Chain";
+const CHAIN_RPC       = "https://rpc.mainnet.dbkchain.io";
+const CHAIN_ID        = 20240603;
 const CHAIN_SYMBOL    = "ETH";
-const CHAIN_EXPLORER  = "https://optimistic.etherscan.io";
+const CHAIN_EXPLORER  = "https://scan.dbkchain.io";
 
 // contract
-const MAX_SUPPLY      = 0; // open edition
-const MINT_PER_WALLET = 5;
-const CONTRACT_ADDR   = "0x128a1e35398c72A9A060f482963f594752BECcEf";
+const MAX_SUPPLY      = 10_000;
+const MINT_PER_WALLET = 10;
+const CONTRACT_ADDR   = "0xda4Ce631fBBbeF2E1aF0Ea2329d7E1c1fA78C7E2";
 const MINT_GAS_RATE   = 1;
 
 // whitelist
-const PROOF_URL       = "https://bored-town.github.io/cdn/blobz/"; // null = public
+const PROOF_URL       = null;
 
 // twitter
-const TWEET_TEXT      = `Snagged my freemint Blobz NFT from @BoredTownNFT to celebrate the EIP-4844 'Dencun'! Gas fees were minimal thanks to the upgrade.
-
-Mint yours at https://boredtown.app/launch/blobz-op`;
+const TWEET_TEXT      = null;
