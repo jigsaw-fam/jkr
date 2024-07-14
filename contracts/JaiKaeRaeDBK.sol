@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract JaiKaeRae is ERC721A, Ownable {
 
     // config
-    constructor() ERC721A("Jai Kae Rae", "JKR") {}
+    constructor(address initialOwner) ERC721A("Jai Kae Rae", "JKR") Ownable(initialOwner) {}
     uint256 public MAX_SUPPLY = 10_000;
     uint256 public MAX_MINT_PER_WALLET = 10;
     uint256 public START_ID = 1;
 
     bool public mintEnabled = true;
-    string public baseURI = "ipfs://bafybeibdipg4ouy4bnhagne5sj6vgmf5wy3lrrs55jimkxwoi4nykuwis4/"; // TODO
+    string public baseURI = "https://jigsaw-fam.github.io/jkr/assets/dbk.png";
 
     // start token id
     function _startTokenId() internal view virtual override returns (uint256) {
@@ -26,7 +26,19 @@ contract JaiKaeRae is ERC721A, Ownable {
         baseURI = _newBaseURI;
     }
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        return string.concat(baseURI, Strings.toString(tokenId), ".json");
+        string memory jsonPreImage = string.concat(
+            string.concat(
+                string.concat('{"name": "Jai Kae Rae DBK Edition #', Strings.toString(tokenId)),
+                '","description":"I\'m a little boy, flow on a wild world.","image":"'
+            ),
+            baseURI
+        );
+        string memory jsonPostImage = '"}';
+        return
+            string.concat(
+                "data:application/json;utf8,",
+                string.concat(jsonPreImage, jsonPostImage)
+            );
     }
 
     // toggle sale, round
