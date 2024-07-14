@@ -84,9 +84,11 @@ $('#connect').click(async _ => {
 
   // 1) mintable
   if (remaining_qty > 0) {
-    $('#mint')
-      .text(`Mint x${remaining_qty} (Free)`)
-      .attr('qty', remaining_qty)
+    $('#mint_qty')
+      .attr('max', remaining_qty)
+      .val(remaining_qty)
+      .removeClass('d-none');
+    update_mint_button(remaining_qty)
       .removeClass('d-none');
   }
   // 2) minted
@@ -98,6 +100,9 @@ $('#disconnect').click(_ => {
   $('#connect')
     .removeClass('disabled')
     .removeClass('d-none');
+  $('#mint_qty')
+    .attr('disabled', false)
+    .addClass('d-none');
   $('#mint')
     .removeClass('disabled')
     .addClass('d-none');
@@ -107,13 +112,21 @@ $('#disconnect').click(_ => {
   tweet_modal.hide();
 });
 
+// mint slider
+$('#mint_qty').on('input', function() {
+  let qty = +$(this).val();
+  update_mint_button(qty);
+});
+
 // mint button
 $('#mint').click(async _ => {
+  $('#mint_qty').attr('disabled', true);
   $('#mint').addClass('d-none');
   $('#minting').removeClass('d-none');
   // recheck chain before mint
   let [ok, msg] = await validate_chain();
   if (!ok) {
+    $('#mint_qty').attr('disabled', false);
     $('#mint').removeClass('d-none');
     $('#minting').addClass('d-none');
     alert(msg);
@@ -132,6 +145,7 @@ $('#mint').click(async _ => {
       $('#minting').addClass('d-none');
       if (receipt.status != 1) { // 1 success, 0 revert
         alert(JSON.stringify(receipt.toJSON()));
+        $('#mint_qty').attr('disabled', false);
         $('#mint').removeClass('d-none');
         return;
       }
@@ -141,6 +155,7 @@ $('#mint').click(async _ => {
     })
     .catch(e => {
       alert(e);
+      $('#mint_qty').attr('disabled', false);
       $('#mint').removeClass('d-none');
       $('#minting').addClass('d-none');
     });
@@ -291,6 +306,13 @@ function play_party_effect() {
       count: 120,
       size: 2,
   });
+}
+function update_mint_button(qty) {
+  let price = +(MINT_PRICE * qty).toFixed(6);
+  let price2 = price == 0 ? 'FREE' : `${price} ${CHAIN_SYMBOL}`;
+  return $('#mint')
+          .text(`Mint x${qty} (${price2})`)
+          .attr('qty', qty);
 }
 function show_msg(msg, auto=false) {
   hide_connect();
