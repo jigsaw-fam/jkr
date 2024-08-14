@@ -1,0 +1,1 @@
+npx hardhat verify --network abstractTestnet 0x0a0fA55ED70ad29E3815dA53cd4EBf19121d4965 0x530119B9BbE6e84a46FDa3d507E619Ec2EA3FBfF

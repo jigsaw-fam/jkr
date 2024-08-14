@@ -1,2 +1,29 @@
 .DS_Store
 *.swp
+
+node_modules
+.env
+
+# Hardhat files
+/cache
+/artifacts
+
+# TypeChain files
+/typechain
+/typechain-types
+
+# solidity-coverage files
+/coverage
+/coverage.json
+
+# Hardhat Ignition default folder for deployments against a local node
+ignition/deployments/chain-31337
+
+# dev folder
+artifacts-zk/
+cache-zk/
+ignition/
+test/
+tsconfig.json
+yarn.lock
+deployments-zk/
