@@ -1,25 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.20;
 
-import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract JaiKaeRae is ERC721A, Ownable {
+contract JaiKaeRae is ERC721, Ownable {
 
     // config
-    constructor(address initialOwner) ERC721A("Jai Kae Rae", "JKR") Ownable(initialOwner) {}
+    constructor(address initialOwner) ERC721("Jai Kae Rae", "JKR") Ownable(initialOwner) {}
     uint256 public MAX_SUPPLY = 10_000;
     uint256 public MAX_MINT_PER_WALLET = 10;
-    uint256 public START_ID = 1;
+    uint256 private _tokenIds = 0;
 
     bool public mintEnabled = true;
     string public baseURI = "https://jigsaw-fam.github.io/jkr/assets/abs.png";
-
-    // start token id
-    function _startTokenId() internal view virtual override returns (uint256) {
-        return START_ID;
-    }
 
     // metadata
     function setBaseURI(string calldata _newBaseURI) external onlyOwner {
@@ -28,7 +23,7 @@ contract JaiKaeRae is ERC721A, Ownable {
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         string memory jsonPreImage = string.concat(
             string.concat(
-                string.concat('{"name": "Jai Kae Rae Abstract Edition #', Strings.toString(tokenId)),
+                string.concat('{"name": "Jai Kae Rae ABS #', Strings.toString(tokenId)),
                 '","description":"I\'m a little boy, flow on a wild world.","image":"'
             ),
             baseURI
@@ -49,7 +44,7 @@ contract JaiKaeRae is ERC721A, Ownable {
     // mint
     function mint(uint quantity, bytes32[] calldata _merkleProof) external {
         require(mintEnabled, "Sale is not enabled");
-        require(_numberMinted(msg.sender) + quantity <= MAX_MINT_PER_WALLET, "Over wallet limit");
+        require(balanceOf(msg.sender) + quantity <= MAX_MINT_PER_WALLET, "Over wallet limit");
         
         _checkSupplyAndMint(msg.sender, quantity);
     }
@@ -57,17 +52,23 @@ contract JaiKaeRae is ERC721A, Ownable {
         _checkSupplyAndMint(msg.sender, quantity);
     }
     function _checkSupplyAndMint(address to, uint256 quantity) private {
-        require(_totalMinted() + quantity <= MAX_SUPPLY, "Over supply");
+        require(totalSupply() + quantity <= MAX_SUPPLY, "Over supply");
 
-        _mint(to, quantity);
+        for (uint256 i = 0; i < quantity; i++) {
+            _tokenIds += 1;
+            _safeMint(to, _tokenIds);
+        }
     }
 
     // aliases
     function numberMinted(address owner) external view returns (uint256) {
-        return _numberMinted(owner);
+        return balanceOf(owner);
     }
     function remainingSupply() external view returns (uint256) {
-        return MAX_SUPPLY - _totalMinted();
+        return MAX_SUPPLY - totalSupply();
+    }
+    function totalSupply() public view returns (uint256) {
+        return _tokenIds;
     }
 
 }
