@@ -1,1 +1,2 @@
-npx hardhat verify --network abstractTestnet 0x3ffB730429a9b78620c528B29246Ce2925346eA6 0x530119B9BbE6e84a46FDa3d507E619Ec2EA3FBfF
+#npx hardhat verify --network abstractTestnet 0x3ffB730429a9b78620c528B29246Ce2925346eA6 0x530119B9BbE6e84a46FDa3d507E619Ec2EA3FBfF
+npx hardhat verify --network abstractTestnet 0x4f6CFE5B81Ef9148fD08A58FB1109B106ae7DD5f
