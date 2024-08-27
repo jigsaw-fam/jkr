@@ -1,9 +1,14 @@
+// https://github.com/cygaar/abstract-paymaster-demo/blob/main/mint-site/app/page.tsx
+// inject viem via esm -- https://viem.sh/docs/installation#cdn
+// see mint_by_gas_rate function
+import { createWalletClient, custom, encodeFunctionData, defineChain, http } from 'https://esm.sh/viem';
+import { eip712WalletActions, getGeneralPaymasterInput, chainConfig } from 'https://esm.sh/viem/zksync';
+
 // https://docs.ethers.org/v6/getting-started/
 let provider = null;
 let signer = null;
 let wallet = null;
 let contract = null;
-let paymaster = null;
 let token = null;
 let reader = new ethers.Contract(CONTRACT_ADDR, CONTRACT_ABI, new ethers.JsonRpcProvider(CHAIN_RPC));
 let rsupply = MAX_SUPPLY;
@@ -170,21 +175,20 @@ $('#mint').click(async _ => {
   }
   // mint
   contract = new ethers.Contract(CONTRACT_ADDR, CONTRACT_ABI, signer);
-  paymaster = new ethers.Contract(PAYMASTER_ADDR, PAYMASTER_ABI, signer);
-  mint_by_gas_rate(contract, paymaster, qty, addr_proof, MINT_GAS_RATE)
-    .then(tx => {
-      console.log(tx);
-      return tx.wait();
-    })
+  mint_by_gas_rate(contract, qty, addr_proof, MINT_GAS_RATE)
+    //.then(tx => {
+    //  console.log(tx);
+    //  return tx.wait();
+    //})
     .then(receipt => { // https://docs.ethers.org/v6/api/providers/#TransactionReceipt
       console.log(receipt);
       $('#minting').addClass('d-none');
-      if (receipt.status != 1) { // 1 success, 0 revert
-        alert(JSON.stringify(receipt.toJSON()));
-        $('#mint_qty').attr('disabled', false);
-        $('#mint').removeClass('d-none');
-        return;
-      }
+      //if (receipt.status != 1) { // 1 success, 0 revert
+      //  alert(JSON.stringify(receipt.toJSON()));
+      //  $('#mint_qty').attr('disabled', false);
+      //  $('#mint').removeClass('d-none');
+      //  return;
+      //}
       if (TWEET_TEXT) tweet_modal.show();
       play_party_effect();
       show_minted();
@@ -192,7 +196,6 @@ $('#mint').click(async _ => {
     .catch(e => {
       reset_mint_button();
       alert(e);
-      console.error(e);
     });
 });
 
@@ -311,54 +314,38 @@ async function switch_chain() {
     return true;
   }
 }
-async function mint_by_gas_rate(contract, paymaster, qty, proof, gas_rate=1) {
-  if ((gas_rate == 1) && (erc20_mint || free_mint)) {
-    let gas_limit = await contract.mint.estimateGas(qty, proof);
-    let fee_data = await provider.getFeeData();
-    const transaction = {
-        to: CONTRACT_ADDR,
-        gasLimit: gas_limit,
-        maxFeePerGas: fee_data.maxFeePerGas,
-        maxPriorityFeePerGas: fee_data.maxPriorityFeePerGas,
-        data: contract.interface.encodeFunctionData('mint', [qty, proof]),
-        //
-        txType: 0,
-        from: 0,
-        gasPerPubdataByteLimit: 0,
-        paymaster: 0,
-        nonce: await signer.getNonce(),
-        value: gas_limit * fee_data.maxFeePerGas,
-        reserved: [0, 0, 0, 0],
-        signature: '0x',
-        factoryDeps: [],
-        paymasterInput: '0x',
-        reservedDynamic: '0x',
-    };
-    console.log(transaction);
-    const { magic, context } = await paymaster.validateAndPayForPaymasterTransaction(
-        ethers.ZeroHash, // Replace with appropriate value
-        ethers.ZeroHash, // Replace with appropriate value
-        transaction
-    );
-    console.log('Paymaster validation result:', magic, context);
-    return null;
-  }
-  // TODO else: don't support paymaster yet
-  let mint_fn = contract.getFunction('mint');
-  let params = [ qty, proof ];
-  let custom = {};
-  // value
-  if (eth_mint && paid_mint) {
-    let wei = ethers.parseEther((MINT_PRICE * qty).toString());
-    custom.value = wei;
-  }
-  // gas rate
-  if (gas_rate != 1) {
-    let gas_limit = await mint_fn.estimateGas(...params);
-    gas_limit = Math.ceil(Number(gas_limit) * gas_rate);
-    custom.gasLimit = gas_limit;
-  }
-  return mint_fn.send(...params, custom);
+async function mint_by_gas_rate(contract, qty, proof, gas_rate=1) {
+  const client = createWalletClient({
+    chain: defineChain({
+      ...chainConfig,
+      id: CHAIN_ID,
+      name: CHAIN_NAME,
+      network: 'abstract-testnet',
+      nativeCurrency: {
+        decimals: 18,
+        name: 'Ethereum',
+        symbol: CHAIN_SYMBOL,
+      },
+      rpcUrls: { default: { http: [ CHAIN_RPC ] } },
+      testnet: true,
+    }),
+    transport: custom(window.ethereum),
+  }).extend(eip712WalletActions());
+  const paymasterInput = getGeneralPaymasterInput({
+    innerInput: '0x',
+  });
+  return await client.sendTransaction({
+    account: signer.address,
+    to: CONTRACT_ADDR,
+    data: encodeFunctionData({
+      abi: CONTRACT_ABI,
+      functionName: "mint",
+      args: [qty, proof]
+    }),
+    paymaster: PAYMASTER_ADDR,
+    paymasterInput: paymasterInput,
+    nonce: await signer.getNonce(),
+  });
 }
 async function load_contract_obj() { // for console use
   provider = new ethers.BrowserProvider(window.ethereum)
@@ -366,7 +353,6 @@ async function load_contract_obj() { // for console use
   let [ok, msg] = await validate_chain();
   if (!ok) { console.warn(msg); return; }
   contract = new ethers.Contract(CONTRACT_ADDR, CONTRACT_ABI, signer);
-  paymaster = new ethers.Contract(PAYMASTER_ADDR, PAYMASTER_ABI, signer);
   console.log('done');
 }
 
