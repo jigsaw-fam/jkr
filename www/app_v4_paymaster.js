@@ -331,19 +331,16 @@ async function mint_by_gas_rate(contract, qty, proof, gas_rate=1) {
     }),
     transport: custom(window.ethereum),
   }).extend(eip712WalletActions());
-  const paymasterInput = getGeneralPaymasterInput({
-    innerInput: '0x',
-  });
   return await client.sendTransaction({
     account: signer.address,
     to: CONTRACT_ADDR,
     data: encodeFunctionData({
       abi: CONTRACT_ABI,
       functionName: "mint",
-      args: [qty, proof]
+      args: [ qty, proof ]
     }),
     paymaster: PAYMASTER_ADDR,
-    paymasterInput: paymasterInput,
+    paymasterInput: getGeneralPaymasterInput({ innerInput: '0x' }),
     nonce: await signer.getNonce(),
   });
 }
