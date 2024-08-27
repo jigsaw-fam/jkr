@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract JaiKaeRae is ERC721, Ownable {
+contract JaiKaeRae2 is ERC721, Ownable {
 
     // config
     constructor(address initialOwner) ERC721("JKR Paymaster Edition", "JKR2") Ownable(initialOwner) {}
