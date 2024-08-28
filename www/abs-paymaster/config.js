@@ -8,7 +8,7 @@ const CHAIN_EXPLORER  = "https://explorer.testnet.abs.xyz";
 // contract
 const MAX_SUPPLY      = 10_000;
 const MINT_PER_WALLET = 10;
-const PAYMASTER_ADDR  = "0x4f6CFE5B81Ef9148fD08A58FB1109B106ae7DD5f";
+const PAYMASTER_ADDR  = "0xE15AA8f5546dA53Caceac1a923381a335E1FCeFe";
 const CONTRACT_ADDR   = "0x186b1FC54C511992de2221d840B7fEe9725AF523";
 const MINT_GAS_RATE   = 1;
 const MINT_PRICE      = 0;

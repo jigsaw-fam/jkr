@@ -43,9 +43,10 @@ contract JKRPaymaster is IPaymaster, Ownable {
         targetAddress = _addr;
     }
 
-    function withdraw() external onlyOwner {
+    function withdraw() external onlyOwner returns (bool) {
         uint256 balance = address(this).balance;
-        payable(msg.sender).transfer(balance);
+        (bool success, ) = payable(msg.sender).call{value: balance}("");
+        return success;
     }
 
     receive() external payable {}
